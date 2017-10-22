@@ -1,0 +1,64 @@
+import pandas as pd
+import numpy as np
+from sklearn import metrics
+from sklearn.ensemble import RandomForestRegressor
+from sklearn import datasets
+from sklearn .cross_validation import train_test_split
+
+raw_data = pd.read_csv('train.csv')
+raw_X = raw_data[['month','day','number']]
+raw_y = raw_data[['amount']]
+raw_y_array = np.ravel(raw_y)
+
+raw_X_train, raw_X_test, raw_y_train, raw_y_test = train_test_split(raw_X, raw_y, random_state=1)
+rf_regr = RandomForestRegressor()
+rf_regr.fit(raw_X, raw_y_array) # Model get
+
+# Test model by cross validation
+raw_y_predict = rf_regr.predict(raw_X_test)
+print("MSE: ", metrics.mean_squared_error(raw_y_test, raw_y_predict))
+
+# Test predict
+test_data = pd.read_csv('test.csv')
+#sub = pd.read_csv('/Users/andy/PycharmProjects/RandomForest/test1.csv')
+
+test_X = test_data[['month','day','number']]
+# print(test_X.shape) # Debugging code
+real_y_predict = rf_regr.predict(test_X)
+""""
+predict = []
+for i in sub.iterrows():
+    data = str(i[1]['date'])
+    month = int(data[4:6])
+    day = int(data[6:8])
+    #day += data.split()[6]
+    #day += data.split()[7]
+    #day = int(day)
+    number = i[1]['number']
+    amount = 0
+    for j in range(len(test_data)):
+        numbers = str(test_data.iloc[j, 2])
+        if test_data.iloc[j, 0] == month and test_data.iloc[j, 1] == day and int(numbers[0:4]) == number:
+            amount += real_y_predict[j]
+    predict.append(amount)
+
+submission = pd.DataFrame({'number': sub['number'], 'date': sub['date'], 'amount': predict})
+
+submission.to_csv('result1.csv', index=False)
+"""
+# print(real_y_predict.shape) # Debugging code
+
+# Outputs
+    # Limit precision to two decimals
+
+result_frame = pd.DataFrame()
+amount = []
+for i in range(len(real_y_predict)):
+    real_y_predict[i] = float(real_y_predict[i])
+    amount.append(float("{0:.1f}".format(real_y_predict[i])))
+
+result_frame[['month','day','number']] = test_data[['month','day','number']]
+result_frame['amount'] =  pd.Series(amount)
+
+output = result_frame[['month','day','number','amount']]
+output.to_csv('result.csv')
